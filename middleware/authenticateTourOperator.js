@@ -33,4 +33,4 @@ const isOperatorAuth = (req,res,next) => {
 };
 
 
-module.exports = {getToken, isAuth};
+module.exports = {getToken, isOperatorAuth};
