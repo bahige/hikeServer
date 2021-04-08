@@ -7,10 +7,9 @@ const config = require('./config.js');
 
 const {mongoUrl} = config;
 
-//Routers 
 const userRoute = require('./routes/userRoute');
-const tourOperatorRoute = require('./routes/tourOperatorRoute');
 const toursRoute = require('./routes/tourRoute');
+const tourOperatorRoute = require('./routes/tourOperatorRoute');
 
 // Creating the express app and allow it to use the cors, morgan and json features
 

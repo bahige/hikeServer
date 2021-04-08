@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const {secretKey}= require('../config');
 
-const getToken = (tourOperator) => {
+const getOrgToken = (tourOperator) => {
 
     return jwt.sign(
         {
@@ -33,4 +33,6 @@ const isOperatorAuth = (req,res,next) => {
 };
 
 
-module.exports = {getToken, isOperatorAuth};
+
+
+module.exports = {getOrgToken, isOperatorAuth};

@@ -2,29 +2,15 @@ const express = require('express');
 const router = express.Router();
 
 const Tour = require("../models/tour");
+const User = require("../models/user");
 
 const {isOperatorAuth} = require("../middleware/authenticateTourOperator");
 const {isAuth, isAdmin} = require('../middleware/authenticateUser');
 
-///////////////////////////////////////////// Getting one tour /////////////////////////////////////////////
-
-router.get("/:id", async(req,res)=>{
-    try{
-        const tour = await Tour.findOne({_id: req.params.id});
-        if(tour){
-            res.send(tour)
-        }
-        else {
-            res.status(404).send({message: "Tour Not Found."})
-        }
-    } catch(err){
-            return res.status(500).json({message:err.message})
-    }
-})
-
+const ObjectId = require('mongodb').ObjectID;
 /////////////////////////////////////////////Deleting tour by Tour Operator/////////////////////////////////////////////
 
-router.delete('/:id', isOperatorAuth, async (req,res)=>{
+router.delete('/tourOrg/:id', isOperatorAuth, async (req,res)=>{
     try{
         const deletedTour = await Tour.findById(req.params.id);
         if(deletedTour){
@@ -60,7 +46,7 @@ router.post("/", isOperatorAuth, async (req, res)=>{
     const tour = new Tour({
         title : req.body.title,
         profileImage : req.body.profileImage,
-        town: req.body.town,
+        destination: req.body.destination,
         district: req.body.district,
         governorate: req.body.governorate,
         tourType : req.body.tourType,
@@ -73,8 +59,25 @@ router.post("/", isOperatorAuth, async (req, res)=>{
         uphillHeight: req.body.uphillHeight,
         downhillHeight: req.body.downhillHeight,
         price : req.body.price,
-        inclusions: req.body.inclusions,
+        includesGuides: req.body.includesGuides,
+        includesBreakfast: req.body.includesBreakfast,
+        includesSnacks: req.body.includesSnacks,
+        includesInsurance: req.body.includesInsurance,
         tourOperator: req.tourOperator._id,
+        distanceFromDeparturePoint : req.body.distanceFromDeparturePoint,    
+        heightAboveSeaLevel : req.body.heightAboveSeaLevel,
+        meetingVenueLink: req.body.meetingVenueLink,
+        isFamilyFriendly: req.body.isFamilyFriendly,
+        priceForMinors : req.body.priceForMinors,
+        priceForUnivStudents : req.body.priceForUnivStudents,
+        priceForGroups : req.body.priceForGroups,
+        priceNoTransp : req.body.priceNoTransp,
+        includesSnowshoes: req.body.includesSnowshoes,
+        description:req.body.description,
+        rules:req.body.rules,
+        whatToBring:req.body.whatToBring,
+        paymentTerms:req.body.paymentTerms,
+        tourOperator: req.tourOperator._id
     })
 
     try{
@@ -92,7 +95,7 @@ router.post("/", isAuth, isAdmin, async (req, res)=>{
     const tour = new Tour({
         title : req.body.title,
         profileImage : req.body.profileImage,
-        town: req.body.town,
+        destination: req.body.destination,
         district: req.body.district,
         governorate: req.body.governorate,
         tourType : req.body.tourType,
@@ -105,8 +108,24 @@ router.post("/", isAuth, isAdmin, async (req, res)=>{
         uphillHeight: req.body.uphillHeight,
         downhillHeight: req.body.downhillHeight,
         price : req.body.price,
-        inclusions: req.body.inclusions,
+        includesGuides: req.body.includesGuides,
+        includesBreakfast: req.body.includesBreakfast,
+        includesSnacks: req.body.includesSnacks,
+        includesInsurance: req.body.includesInsurance,
         tourOperator: req.tourOperator._id,
+        distanceFromDeparturePoint : req.body.distanceFromDeparturePoint,    
+        heightAboveSeaLevel : req.body.heightAboveSeaLevel,
+        meetingVenueLink: req.body.meetingVenueLink,
+        isFamilyFriendly: req.body.isFamilyFriendly,
+        priceForMinors : req.body.priceForMinors,
+        priceForUnivStudents : req.body.priceForUnivStudents,
+        priceForGroups : req.body.priceForGroups,
+        priceNoTransp : req.body.priceNoTransp,
+        includesSnowshoes: req.body.includesSnowshoes,
+        description:req.body.description,
+        rules:req.body.rules,
+        whatToBring:req.body.whatToBring,
+        paymentTerms:req.body.paymentTerms,
     })
 
     try{
@@ -125,7 +144,7 @@ router.patch('/:id', isOperatorAuth, async (req,res) => {
     if(tour){
         tour.title = req.body.title || tour.title;
         tour.profileImage = req.body.profileImage || tour.profileImage;
-        tour.town= req.body.town || tour.town;
+        tour.destination= req.body.destination || tour.destination;
         tour.district= req.body.district || tour.district;
         tour.governorate= req.body.governorate || tour.governorate;
         tour.tourType = req.body.tourType || tour.tourType;
@@ -138,14 +157,33 @@ router.patch('/:id', isOperatorAuth, async (req,res) => {
         tour.uphillHeight= req.body.uphillHeight || tour.uphillHeight;
         tour.downhillHeight= req.body.downhillHeight || tour.downhillHeight;
         tour.price = req.body.price || tour.price;
-        tour.inclusions= req.body.inclusions || tour.inclusions;
+        tour.includesGuides = req.body.includesGuides || tour.includesGuides;
+        tour.includesBreakfast = req.body.includesBreakfast || tour.includesBreakfast;
+        tour.includesSnacks = req.body.includesSnacks || tour.includesSnacks;
+        tour.includesInsurance = req.body.includesInsurance || tour.includesInsurance;
+
+        tour.distanceFromDeparturePoint = req.body.distanceFromDeparturePoint || tour.distanceFromDeparturePoint;    
+        tour.heightAboveSeaLevel = req.body.heightAboveSeaLevel || tour.heightAboveSeaLevel;
+        tour.meetingVenueLink= req.body.meetingVenueLink || tour.meetingVenueLink;
+        tour.isFamilyFriendly= req.body.isFamilyFriendly || tour.isFamilyFriendly;
+        tour.priceForMinors = req.body.priceForMinors || tour.priceForMinors;
+        tour.priceForUnivStudents = req.body.priceForUnivStudents || tour.priceForUnivStudents;
+        tour.priceForGroups = req.body.priceForGroups || tour.priceForGroups;
+        tour.priceNoTransp = req.body.priceNoTransp || tour.priceNoTransp;
+        tour.includesSnowshoes= req.body.includesSnowshoes || tour.includesSnowshoes;
+        tour.description=req.body.description || tour.description;
+        tour.rules=req.body.rules || tour.rules;
+        tour.whatToBring=req.body.whatToBring || tour.whatToBring;
+        tour.paymentTerms=req.body.paymentTerms || tour.paymentTerms;
+        
+      
 
         const updatedTour = await tour.save();
     
         res.send({
             title : updatedTour.title,
             profileImage : updatedTour.profileImage,
-            town: updatedTour.town,
+            destination: updatedTour.destination,
             district: updatedTour.district,
             governorate: updatedTour.governorate,
             tourType : updatedTour.tourType,
@@ -158,7 +196,24 @@ router.patch('/:id', isOperatorAuth, async (req,res) => {
             uphillHeight: updatedTour.uphillHeight,
             downhillHeight: updatedTour.downhillHeight,
             price : updatedTour.price,
-            inclusions: updatedTour.inclusions,
+            includesGuides: updatedTour.includesGuides,
+            includesBreakfast: updatedTour.includesBreakfast,
+            includesSnacks: updatedTour.includesSnacks,
+            includesInsurance: updatedTour.includesInsurance,
+
+            distanceFromDeparturePoint : updatedTour.distanceFromDeparturePoint,    
+            heightAboveSeaLevel : updatedTour.heightAboveSeaLevel,
+            meetingVenueLink: updatedTour.meetingVenueLink,
+            isFamilyFriendly: updatedTour.isFamilyFriendly,
+            priceForMinors : updatedTour.priceForMinors,
+            priceForUnivStudents : updatedTour.priceForUnivStudents,
+            priceForGroups : updatedTour.priceForGroups,
+            priceNoTransp : updatedTour.priceNoTransp,
+            includesSnowshoes: updatedTour.includesSnowshoes,
+            description:updatedTour.description,
+            rules:updatedTour.rules,
+            whatToBring:updatedTour.whatToBring,
+            paymentTerms:updatedTour.paymentTerms,
     }) 
     } else {
         res.status(404).send({message:"Tour Not Found"})
@@ -175,6 +230,8 @@ router.patch('/:id', isAuth, isAdmin, async (req,res) => {
         tour.title = req.body.title || tour.title;
         tour.profileImage = req.body.profileImage || tour.profileImage;
         tour.destination= req.body.destination || tour.destination;
+        tour.district= req.body.district || tour.district;
+        tour.governorate= req.body.governorate || tour.governorate;
         tour.tourType = req.body.tourType || tour.tourType;
         tour.date = req.body.date || tour.date;
         tour.departureTime=req.body.departureTime || tour.departureTime;
@@ -185,7 +242,24 @@ router.patch('/:id', isAuth, isAdmin, async (req,res) => {
         tour.uphillHeight= req.body.uphillHeight || tour.uphillHeight;
         tour.downhillHeight= req.body.downhillHeight || tour.downhillHeight;
         tour.price = req.body.price || tour.price;
-        tour.inclusions= req.body.inclusions || tour.inclusions;
+        tour.includesGuides = req.body.includesGuides || tour.includesGuides;
+        tour.includesBreakfast = req.body.includesBreakfast || tour.includesBreakfast;
+        tour.includesSnacks = req.body.includesSnacks || tour.includesSnacks;
+        tour.includesInsurance = req.body.includesInsurance || tour.includesInsurance;
+
+        tour.distanceFromDeparturePoint = req.body.distanceFromDeparturePoint || tour.distanceFromDeparturePoint;    
+        tour.heightAboveSeaLevel = req.body.heightAboveSeaLevel || tour.heightAboveSeaLevel;
+        tour.meetingVenueLink= req.body.meetingVenueLink || tour.meetingVenueLink;
+        tour.isFamilyFriendly= req.body.isFamilyFriendly || tour.isFamilyFriendly;
+        tour.priceForMinors = req.body.priceForMinors || tour.priceForMinors;
+        tour.priceForUnivStudents = req.body.priceForUnivStudents || tour.priceForUnivStudents;
+        tour.priceForGroups = req.body.priceForGroups || tour.priceForGroups;
+        tour.priceNoTransp = req.body.priceNoTransp || tour.priceNoTransp;
+        tour.includesSnowshoes= req.body.includesSnowshoes || tour.includesSnowshoes;
+        tour.description=req.body.description || tour.description;
+        tour.rules=req.body.rules || tour.rules;
+        tour.whatToBring=req.body.whatToBring || tour.whatToBring;
+        tour.paymentTerms=req.body.paymentTerms || tour.paymentTerms;
 
         const updatedTour = await tour.save();
     
@@ -193,6 +267,8 @@ router.patch('/:id', isAuth, isAdmin, async (req,res) => {
             title : updatedTour.title,
             profileImage : updatedTour.profileImage,
             destination: updatedTour.destination,
+            district: updatedTour.district,
+            governorate: updatedTour.governorate,
             tourType : updatedTour.tourType,
             date : updatedTour.date,
             departureTime:updatedTour.departureTime,
@@ -203,7 +279,24 @@ router.patch('/:id', isAuth, isAdmin, async (req,res) => {
             uphillHeight: updatedTour.uphillHeight,
             downhillHeight: updatedTour.downhillHeight,
             price : updatedTour.price,
-            inclusions: updatedTour.inclusions,
+            includesGuides: updatedTour.includesGuides,
+            includesBreakfast: updatedTour.includesBreakfast,
+            includesSnacks: updatedTour.includesSnacks,
+            includesInsurance: updatedTour.includesInsurance,
+
+            distanceFromDeparturePoint : updatedTour.distanceFromDeparturePoint,    
+            heightAboveSeaLevel : updatedTour.heightAboveSeaLevel,
+            meetingVenueLink: updatedTour.meetingVenueLink,
+            isFamilyFriendly: updatedTour.isFamilyFriendly,
+            priceForMinors : updatedTour.priceForMinors,
+            priceForUnivStudents : updatedTour.priceForUnivStudents,
+            priceForGroups : updatedTour.priceForGroups,
+            priceNoTransp : updatedTour.priceNoTransp,
+            includesSnowshoes: updatedTour.includesSnowshoes,
+            description:updatedTour.description,
+            rules:updatedTour.rules,
+            whatToBring:updatedTour.whatToBring,
+            paymentTerms:updatedTour.paymentTerms,
     }) 
     } else {
         res.status(404).send({message:"Tour Not Found"})
@@ -215,8 +308,9 @@ router.patch('/:id', isAuth, isAdmin, async (req,res) => {
 router.get("/", async (req, res) => {
 
     const district = req.query.district ?  {district : req.query.district}  : {};
-    const governorate = req.query.governorate ? {district : req.query.governorate} : {};
+    const governorate = req.query.governorate ? {governorate : req.query.governorate} : {};
     const hikingLevel = req.query.hikingLevel ? {hikingLevel : req.query.hikingLevel} : {};
+    // const date = req.query.date ? {date : req.query.date} : {};
   
     const searchKeyword = req.query.searchKeyword
       ? {
@@ -226,23 +320,19 @@ router.get("/", async (req, res) => {
           },
         }
       : {};
-  
-    // const sortOrder = req.query.sortOrder
-    //   ? req.query.sortOrder === "lowest"
-    //     ? { price: 1 }
-    //     : { price: -1 }
-    //   : { _id: -1 };
+
+      const date = req.query.date ? { date: req.query.date } : {};
   
     const { page = 1, limit  } = req.query;
   
     try{
-    const tours = await Tour.find({ ...district, ...governorate, ...hikingLevel,...searchKeyword  })
- //   .sort(sortOrder)
+    const tours = await Tour.find({ ...district, ...governorate, ...hikingLevel,...searchKeyword, ...date  })
+    .populate("tourOperator")
     .limit(limit * 1)
     .skip((page - 1) * limit);
   
     // get total documents in the Posts collection
-    const count = await Tour.find({ ...district, ...governorate, ...hikingLevel,...searchKeyword })
+    const count = await Tour.find({ ...district, ...governorate, ...hikingLevel,...searchKeyword, ...date })
                  .countDocuments();
   
      // return response with posts, total pages, and current page
@@ -258,4 +348,82 @@ router.get("/", async (req, res) => {
     }
       
   });
+  
+
+  ///////////////////////////////////////////// Getting list of tours  auth/////////////////////////////////////////////
+
+
+
+router.get("/myTours", 
+  isOperatorAuth, 
+  async (req, res) => {
+    const { page = 1, limit  } = req.query;
+
+    const searchKeyword = req.query.searchKeyword
+    ? {
+        title: {
+          $regex: req.query.searchKeyword,
+          $options: "i",
+        },
+      }
+    : {};
+
+
+    const tours = await Tour.find({tourOperator: req.tourOperator._id, ...searchKeyword})
+    .populate('tourOperator')
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+
+    // get total documents in the Posts collection
+    const count = await Tour.find({
+        tourOperator: req.tourOperator._id, ...searchKeyword})
+    .countDocuments();
+
+    res.json({
+      tours,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      limit:limit,
+      count:count
+      });
+
+  });
+
+
+  ///////////////////////////////////////////// Getting one tour /////////////////////////////////////////////
+
+router.get("/:id", async(req,res)=>{
+    try{
+        const tour = await Tour.findOne({_id: req.params.id}).populate('tourOperator');
+        if(tour){
+            res.json(tour)
+        }
+        else {
+            res.status(404).send({message: "Tour Not Found."})
+        }
+    } catch(err){
+            return res.status(500).json({message:err.message})
+    }
+})
+
+
+///////////////////////////////Add Hikers to tour//////////////////////////
+
+router.post("/:id/hikers", async (req, res) => {
+    const tour = await Tour.findById(req.params.id).populate('hikers');
+    if (tour) {
+      const hiker =  User.findById(req.body._id);
+      tour.hikers.push(hiker);
+      console.log("hiker", hiker);
+      const updatedTour = await tour.save();
+      res.status(201).send({
+        data: updatedTour.hikers[updatedTour.hikers.length - 1],
+        message: "Hiker saved successfully.",
+      });
+    } else {
+      res.status(404).send({ message: "Tour Not Found" });
+    }
+  });
+
+
 module.exports = router;
