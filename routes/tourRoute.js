@@ -7,7 +7,6 @@ const User = require("../models/user");
 const {isOperatorAuth} = require("../middleware/authenticateTourOperator");
 const {isAuth, isAdmin} = require('../middleware/authenticateUser');
 
-const ObjectId = require('mongodb').ObjectID;
 /////////////////////////////////////////////Deleting tour by Tour Operator/////////////////////////////////////////////
 
 router.delete('/tourOrg/:id', isOperatorAuth, async (req,res)=>{
@@ -223,7 +222,7 @@ router.patch('/:id', isOperatorAuth, async (req,res) => {
 
 ///////////////////////////////////////////// Updating A Tour By Tour Operator /////////////////////////////////////////////
 
-router.patch('/:id', isAuth, isAdmin, async (req,res) => {
+router.patch('/:id/adminTours', isAuth, isAdmin, async (req,res) => {
     const tourId = req.params.id;
     const tour= await Tour.findById(tourId);
     if(tour){
@@ -310,7 +309,6 @@ router.get("/", async (req, res) => {
     const district = req.query.district ?  {district : req.query.district}  : {};
     const governorate = req.query.governorate ? {governorate : req.query.governorate} : {};
     const hikingLevel = req.query.hikingLevel ? {hikingLevel : req.query.hikingLevel} : {};
-    // const date = req.query.date ? {date : req.query.date} : {};
   
     const searchKeyword = req.query.searchKeyword
       ? {
@@ -328,6 +326,7 @@ router.get("/", async (req, res) => {
     try{
     const tours = await Tour.find({ ...district, ...governorate, ...hikingLevel,...searchKeyword, ...date  })
     .populate("tourOperator")
+    .populate("hikers")
     .limit(limit * 1)
     .skip((page - 1) * limit);
   
@@ -371,6 +370,7 @@ router.get("/myTours",
 
     const tours = await Tour.find({tourOperator: req.tourOperator._id, ...searchKeyword})
     .populate('tourOperator')
+    .populate('hikers')
     .limit(limit * 1)
     .skip((page - 1) * limit);
 
@@ -390,11 +390,38 @@ router.get("/myTours",
   });
 
 
+ ///////////////////////////////////////////// Getting hikers' tours /////////////////////////////////////////////
+
+  router.get("/hikersTours", isAuth, async (req, res) => {
+    try{
+    
+    const { page = 1, limit  } = req.query;
+
+    const tours = await Tour.find({hikers: req.user._id}).populate('tourOperator')
+    .limit(limit * 1).skip((page - 1) * limit);
+
+    const count = await Tour.find({hikers: req.user._id}).countDocuments();
+    if (tours) {
+            res.json({
+                tours,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                limit:limit,
+                count:count
+                });
+    } else {
+      res.status(404).send({ message: "Tour Not Found" });
+    }} catch(err){
+
+    return res.status(500).json({message:err.message})
+    }
+});
+
   ///////////////////////////////////////////// Getting one tour /////////////////////////////////////////////
 
 router.get("/:id", async(req,res)=>{
     try{
-        const tour = await Tour.findOne({_id: req.params.id}).populate('tourOperator');
+        const tour = await Tour.findOne({_id: req.params.id}).populate('tourOperator').populate('hikers');
         if(tour){
             res.json(tour)
         }
@@ -409,21 +436,52 @@ router.get("/:id", async(req,res)=>{
 
 ///////////////////////////////Add Hikers to tour//////////////////////////
 
-router.post("/:id/hikers", async (req, res) => {
-    const tour = await Tour.findById(req.params.id).populate('hikers');
-    if (tour) {
-      const hiker =  User.findById(req.body._id);
+// router.post("/:id/hikers", isAuth, async (req, res) => {
+//     const tour = await Tour.findById(req.params.id).populate('hikers');
+//     if (tour) {
+//       const hiker = await  User.findById(req.user._id);
+//       tour.hikers.push(hiker);
+//       console.log("hiker", hiker);
+//       const updatedTour = await tour.save();
+//       res.status(201).json({
+//         hiker: updatedTour.hikers[updatedTour.hikers.length - 1],
+//         message: "Hiker saved successfully.",
+//         success: true
+//       });
+//     } else {
+//       res.status(404).send({ message: "Tour Not Found" });
+//     }
+//   });
+
+
+router.post("/:id/hikers", isAuth, async (req, res) => {
+
+    const queriedTour = await Tour.findOne({_id: req.params.id, hikers : req.user._id});
+    if (!queriedTour) {
+      const tour = await Tour.findById(req.params.id);
+      if(tour){     
+      const hiker = await  User.findById(req.user._id);
       tour.hikers.push(hiker);
       console.log("hiker", hiker);
       const updatedTour = await tour.save();
-      res.status(201).send({
-        data: updatedTour.hikers[updatedTour.hikers.length - 1],
+      res.status(201).json({
+        hiker: updatedTour.hikers[updatedTour.hikers.length - 1],
         message: "Hiker saved successfully.",
+        success: true
       });
     } else {
       res.status(404).send({ message: "Tour Not Found" });
     }
+    }
+    else{
+       res.status(406).send({ message: "Tour has been reserved." });
+    }
+
   });
+
+
+
+  ///////////////////////////////Add Hikers to tour//////////////////////////
 
 
 module.exports = router;

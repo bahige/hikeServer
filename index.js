@@ -14,13 +14,22 @@ const tourOperatorRoute = require('./routes/tourOperatorRoute');
 // Creating the express app and allow it to use the cors, morgan and json features
 
 const app = express();
-app.use(cors());
+const corsOptions ={
+  origin:'http://localhost:3000', 
+  credentials:true,            //access-control-allow-credentials:true
+  optionSuccessStatus:200,
+  methods: "GET,HEAD,OPTIONS,POST,PUT,PATCH"
+}
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(logger('dev'));
 
+
+
 // Initializing the port on which the server will be read
 
-const PORT = process.env.PORT || 3200;
+const PORT = process.env.PORT || 3400;
 
 
 // Connecting the app to the database 

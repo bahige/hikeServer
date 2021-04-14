@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const TourOperator = require("../models/tourOperator");
+const Tour = require("../models/tour");
 
 const {getOrgToken, isOperatorAuth} = require('../middleware/authenticateTourOperator');
 
@@ -174,12 +175,7 @@ router.get("/",  async (req, res) => {
       }
       : {};
   
-    // const sortOrder = req.query.sortOrder
-    //   ? req.query.sortOrder === "lowest"
-    //     ? { price: 1 }
-    //     : { price: -1 }
-    //   : { _id: -1 };
-  
+
     const { page = 1, limit  } = req.query;
   
     try{
@@ -253,6 +249,50 @@ router.get("/mine/:authOrgId", isOperatorAuth,  async(req,res)=>{
           return res.status(500).json({message:err.message})
   }
 })
+
+///////////////////////////////////////////// Getting tours of one tour operator /////////////////////////////////////////////
+
+router.get("/:orgId/tours",  async(req,res)=>{
+
+    try{
+        const governorate = req.query.governorate ? {governorate : req.query.governorate} : {};
+        const hikingLevel = req.query.hikingLevel ? {hikingLevel : req.query.hikingLevel} : {};
+        const date = req.query.date ? {date : req.query.date} : {};
+      
+        const searchKeyword = req.query.searchKeyword
+          ? {
+              title: {
+                $regex: req.query.searchKeyword,
+                $options: "i",
+              },
+            }
+          : {};
+          
+        const { page = 1, limit  } = req.query;
+
+        const tours = await Tour.find({tourOperator: req.params.orgId, ...governorate, ...hikingLevel,...searchKeyword, ...date})
+        .populate('tourOperator')
+        .limit(limit * 1)
+        .skip((page - 1) * limit);
+
+        const count = await Tour.find({tourOperator: req.params.orgId, ...governorate, ...hikingLevel,...searchKeyword, ...date})
+        .countDocuments();
+
+        if(tours){
+            res.json({
+                tours: tours,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                limit:limit,
+                count:count})
+        }
+        else {
+            res.status(404).send({message: "Tours Not Found."})
+        }
+    } catch(err){
+            return res.status(500).json({message:err.message})
+    }
+  })
 
 
 

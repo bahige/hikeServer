@@ -34,7 +34,7 @@ const tourSchema = new mongoose.Schema({
     priceForGroups : {type: Number, required: true, min: 0, default: 0},
     priceNoTransp : {type: Number, required: true, min: 0, default: 0},
     includesSnowshoes: {type: Boolean, default: false},
-    description:{type: String, required: true},
+    description:{type: String},
     rules:{type: String},
     whatToBring:{type: String},
     paymentTerms:{type: String},

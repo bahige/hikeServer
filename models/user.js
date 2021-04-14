@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
     age : {type: Number,required: true, min:18},
     gender : {type: String,required: true},
     isAdmin: {type: Boolean, required: true, default: false},
-    tours: [{type: mongoose.Schema.Types.ObjectId, ref:"Tour"}]
+    // tours: [{type: mongoose.Schema.Types.ObjectId, ref:"Tour"}]
 }, {
     timestamps: true
 })

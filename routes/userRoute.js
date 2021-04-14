@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 
 const User = require("../models/user");
-const Tour = require("../models/tour");
 
 const {getToken, isAuth, isAdmin} = require('../middleware/authenticateUser');
 
@@ -55,6 +54,7 @@ router.post('/register', async( req, res) => {
         res.status(401).send({msg: "Invalid user data"})
     }
 })
+
 
 
 // Signin router
@@ -180,7 +180,22 @@ router.delete('/:id', isAuth, isAdmin, async (req,res)=>{
 });
 
 
-///////////////////////////////Reserve tour for hiker//////////////////////////
+///////////////////////////////Get User/////////////////////////////
+
+
+  router.get("/:id", isAuth, async(req,res)=>{
+    try{
+        const user = await User.findOne({_id: req.params.id});
+        if(user){
+            res.json(user)
+        }
+        else {
+            res.status(404).send({message: "User Not Found."})
+        }
+    } catch(err){
+            return res.status(500).json({message:err.message})
+    }
+})
 
 
 
